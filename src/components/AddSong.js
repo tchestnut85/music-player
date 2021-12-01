@@ -7,6 +7,7 @@ import {
 	DialogTitle,
 	DialogContent,
 	DialogActions,
+	useMediaQuery,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Link, AddBoxOutlined } from '@mui/icons-material';
@@ -33,6 +34,7 @@ const useStyles = makeStyles(theme => ({
 const AddSong = () => {
 	const [dialog, setDialog] = useState(false);
 	const classes = useStyles();
+	const greaterThanSm = useMediaQuery(theme => theme.breakpoints.up('sm'));
 
 	const handleCloseDialog = () => {
 		setDialog(false);

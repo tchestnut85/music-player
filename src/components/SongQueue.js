@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar, IconButton, Typography } from '@mui/material';
+import { Avatar, IconButton, Typography, useMediaQuery } from '@mui/material';
 import { DUMMY_DATA, PLACEHOLDER_URL } from '../utils/data';
 import { Delete } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
@@ -58,15 +58,19 @@ const QueuedSong = ({ song }) => {
 };
 
 const SongQueue = () => {
+	const greaterThanMd = useMediaQuery(theme => theme.breakpoints.up('md'));
+
 	return (
-		<div style={{ margin: '10px 0' }}>
-			<Typography color='textSecondary' variant='button'>
-				Queue (5)
-			</Typography>
-			{Array.from({ length: 5 }, () => DUMMY_DATA).map((DUMMY_DATA, i) => (
-				<QueuedSong key={i} song={DUMMY_DATA} />
-			))}
-		</div>
+		greaterThanMd && (
+			<div style={{ margin: '10px 0' }}>
+				<Typography color='textSecondary' variant='button'>
+					Queue (5)
+				</Typography>
+				{Array.from({ length: 5 }, () => DUMMY_DATA).map((DUMMY_DATA, i) => (
+					<QueuedSong key={i} song={DUMMY_DATA} />
+				))}
+			</div>
+		)
 	);
 };
 
