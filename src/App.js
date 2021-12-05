@@ -10,6 +10,7 @@ const GQL_URI = 'https://music-player-tc.herokuapp.com/v1/graphql';
 const client = new ApolloClient({
 	uri: GQL_URI,
 	cache: new InMemoryCache(),
+	connectToDevTools: true,
 });
 
 function App() {
