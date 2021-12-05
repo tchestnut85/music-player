@@ -10,8 +10,8 @@ import {
 } from '@mui/material';
 import { PlayArrow, Save } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
-import { useQuery } from '@apollo/client';
-import { GET_SONGS } from '../utils/queries';
+import { useSubscription } from '@apollo/client';
+import { GET_SONGS } from '../utils/subscriptions';
 
 const useStyles = makeStyles(theme => ({
 	container: {
@@ -65,7 +65,7 @@ const Song = ({ song }) => {
 };
 
 const SongList = () => {
-	const { data, loading, error } = useQuery(GET_SONGS);
+	const { data, loading, error } = useSubscription(GET_SONGS);
 
 	if (loading) {
 		return (

@@ -5,12 +5,18 @@ import SongList from './components/SongList';
 import SongPlayer from './components/SongPlayer';
 import { Grid, useMediaQuery, Hidden } from '@mui/material';
 import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client';
+import { WebSocketLink } from '@apollo/client/link/ws';
 
-const GQL_URI = 'https://music-player-tc.herokuapp.com/v1/graphql';
+const GQL_URI = 'wss://music-player-tc.herokuapp.com/v1/graphql';
 const client = new ApolloClient({
-	uri: GQL_URI,
-	cache: new InMemoryCache(),
+	link: new WebSocketLink({
+		uri: GQL_URI,
+		options: {
+			reconnect: true,
+		},
+	}),
 	connectToDevTools: true,
+	cache: new InMemoryCache(),
 });
 
 function App() {
