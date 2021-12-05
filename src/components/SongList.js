@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
 	Card,
 	CircularProgress,
@@ -10,6 +10,8 @@ import {
 } from '@mui/material';
 import { PlayArrow, Save } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
+import { useQuery } from '@apollo/client';
+import { GET_SONGS } from '../utils/queries';
 
 const useStyles = makeStyles(theme => ({
 	container: {
@@ -32,8 +34,8 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const Song = ({ song }) => {
-	const { artist, title, thumbnail } = song;
 	const classes = useStyles();
+	const { title, artist, thumbnail } = song;
 
 	return (
 		<Card className={classes.container}>
@@ -63,13 +65,7 @@ const Song = ({ song }) => {
 };
 
 const SongList = () => {
-	let loading = false;
-
-	const DUMMY_DATA = {
-		title: 'Deceiver of the Gods',
-		artist: 'Amon Amarth',
-		thumbnail: 'https://i1.sndcdn.com/avatars-000002626831-y05l3t-t500x500.jpg',
-	};
+	const { data, loading, error } = useQuery(GET_SONGS);
 
 	if (loading) {
 		return (
@@ -86,10 +82,14 @@ const SongList = () => {
 		);
 	}
 
+	if (error) {
+		return <div>Error fetching songs...</div>;
+	}
+
 	return (
 		<div>
-			{Array.from({ length: 10 }, () => DUMMY_DATA).map((DUMMY_DATA, i) => (
-				<Song key={i} song={DUMMY_DATA} />
+			{data.songs.map(song => (
+				<Song key={song.id} song={song} />
 			))}
 		</div>
 	);
