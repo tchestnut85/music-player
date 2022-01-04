@@ -1,3 +1,4 @@
+import React from 'react';
 import {
 	Card,
 	Typography,
@@ -6,15 +7,13 @@ import {
 	Slider,
 	CardMedia,
 } from '@mui/material';
-import React from 'react';
 import { makeStyles } from '@mui/styles';
-
-import SongQueue from './SongQueue';
-import { PlayArrow, SkipPrevious } from '@mui/icons-material';
+import { PlayArrow, SkipPrevious, Pause } from '@mui/icons-material';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 
-const PLACEHOLDER_URL =
-	'https://i1.sndcdn.com/avatars-000002626831-y05l3t-t500x500.jpg';
+import SongQueue from './SongQueue';
+import { useSongContext } from '../utils/context/SongState';
+import { PLAY_SONG, PAUSE_SONG } from '../utils/context/songReducer';
 
 const useStyles = makeStyles(theme => ({
 	container: {
@@ -48,24 +47,34 @@ const useStyles = makeStyles(theme => ({
 const SongPlayer = () => {
 	const classes = useStyles();
 
+	const [{ song, isPlaying }, dispatch] = useSongContext();
+
+	const handleTogglePlay = () => {
+		dispatch(isPlaying ? { type: PAUSE_SONG } : { type: PLAY_SONG });
+	};
+
 	return (
 		<>
 			<Card variant='outlined' className={classes.container}>
 				<div className={classes.details}>
 					<CardContent className={classes.content}>
 						<Typography variant='h5' component='h3'>
-							Title
+							{song?.title}
 						</Typography>
 						<Typography variant='subtitle1' component='p' color='textSecondary'>
-							Artist
+							{song?.artist}
 						</Typography>
 					</CardContent>
 					<div className={classes.controls}>
 						<IconButton>
 							<SkipPrevious />
 						</IconButton>
-						<IconButton>
-							<PlayArrow className={classes.playIcon} />
+						<IconButton onClick={handleTogglePlay}>
+							{isPlaying ? (
+								<Pause className={classes.playIcon} />
+							) : (
+								<PlayArrow className={classes.playIcon} />
+							)}
 						</IconButton>
 						<IconButton>
 							<SkipNextIcon />
@@ -76,7 +85,7 @@ const SongPlayer = () => {
 					</div>
 					<Slider type='range' min={0} max={1} step={0.01} />
 				</div>
-				<CardMedia image={PLACEHOLDER_URL} className={classes.thumbnail} />
+				<CardMedia image={song?.thumbnail} className={classes.thumbnail} />
 			</Card>
 			<SongQueue />
 		</>

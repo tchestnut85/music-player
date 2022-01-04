@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
 	Card,
 	CircularProgress,
@@ -8,10 +8,12 @@ import {
 	IconButton,
 	CardContent,
 } from '@mui/material';
-import { PlayArrow, Save } from '@mui/icons-material';
+import { PlayArrow, Save, Pause } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
 import { useSubscription } from '@apollo/client';
 import { GET_SONGS } from '../utils/subscriptions';
+import { useSongContext } from '../utils/context/SongState';
+import { PLAY_SONG, PAUSE_SONG, SET_SONG } from '../utils/context/songReducer';
 
 const useStyles = makeStyles(theme => ({
 	container: {
@@ -33,26 +35,41 @@ const useStyles = makeStyles(theme => ({
 	},
 }));
 
-const Song = ({ song }) => {
+const Song = ({ song: currentSong }) => {
 	const classes = useStyles();
-	const { title, artist, thumbnail } = song;
+
+	const [{ song, isPlaying }, dispatch] = useSongContext();
+	const [isCurrentSongPlaying, setIsCurrentSongPlaying] = useState(false);
+
+	useEffect(() => {
+		const isSongPlaying = isPlaying && currentSong?.id === song?.id;
+		setIsCurrentSongPlaying(isSongPlaying);
+	}, [currentSong?.id, song?.id, isPlaying]);
+
+	const handleTogglePlay = () => {
+		dispatch({ type: SET_SONG, payload: { currentSong } });
+		dispatch(isPlaying ? { type: PAUSE_SONG } : { type: PLAY_SONG });
+	};
 
 	return (
 		<Card className={classes.container}>
 			<div className={classes.songInfoContainer}>
-				<CardMedia image={thumbnail} className={classes.thumbnail} />
+				<CardMedia
+					image={currentSong?.thumbnail}
+					className={classes.thumbnail}
+				/>
 				<div className={classes.songInfo}>
 					<CardContent>
 						<Typography gutterBottom variant='h5' component='h2'>
-							{title}
+							{currentSong?.title}
 						</Typography>
 						<Typography variant='body1' component='p' color='textSecondary'>
-							{artist}
+							{currentSong?.artist}
 						</Typography>
 					</CardContent>
 					<CardActions>
-						<IconButton size='small' color='primary'>
-							<PlayArrow />
+						<IconButton size='small' color='primary' onClick={handleTogglePlay}>
+							{isCurrentSongPlaying ? <Pause /> : <PlayArrow />}
 						</IconButton>
 						<IconButton size='small' color='secondary'>
 							<Save color='secondary' />

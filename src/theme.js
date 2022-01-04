@@ -1,10 +1,14 @@
 import { createTheme } from '@mui/material/styles';
-import { teal, purple } from '@mui/material/colors';
+import { cyan, blueGrey } from '@mui/material/colors';
 
 const theme = createTheme({
 	palette: {
-		primary: teal,
-		secondary: purple,
+		primary: {
+			main: cyan[800],
+		},
+		secondary: {
+			main: blueGrey[500],
+		},
 		mode: 'dark',
 	},
 });
