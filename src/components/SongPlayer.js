@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import {
 	Card,
 	Typography,
@@ -16,6 +16,7 @@ import { useSongContext } from '../utils/context/SongState';
 import { PLAY_SONG, PAUSE_SONG } from '../utils/context/songReducer';
 import { useQuery } from '@apollo/client';
 import { GET_QUEUED_SONGS } from '../utils/queries';
+import ReactPlayer from 'react-player';
 
 const useStyles = makeStyles(theme => ({
 	container: {
@@ -48,14 +49,30 @@ const useStyles = makeStyles(theme => ({
 
 const SongPlayer = () => {
 	const classes = useStyles();
-
 	const { data } = useQuery(GET_QUEUED_SONGS);
-
 	const [{ song, isPlaying }, dispatch] = useSongContext();
+	const reactPlayerRef = useRef();
+	const [played, setPlayed] = useState(0);
+	const [seeking, setSeeking] = useState(false);
+	const [playedSeconds, setPlayedSeconds] = useState(0);
 
 	const handleTogglePlay = () => {
 		dispatch(isPlaying ? { type: PAUSE_SONG } : { type: PLAY_SONG });
 	};
+
+	const handleProgressChange = (e, newValue) => {
+		setPlayed(newValue);
+	};
+
+	const handleSeekMouseDown = () => setSeeking(true);
+
+	const handleSeekMouseUp = () => {
+		setSeeking(false);
+		reactPlayerRef.current.seekTo(played);
+	};
+
+	const formatDuration = seconds =>
+		new Date(seconds * 1000).toISOString().substring(11, 19);
 
 	return (
 		<>
@@ -84,11 +101,32 @@ const SongPlayer = () => {
 							<SkipNextIcon />
 						</IconButton>
 						<Typography variant='subtitle1' component='p' color='textSecondary'>
-							00:05:30
+							{formatDuration(playedSeconds)}
 						</Typography>
 					</div>
-					<Slider type='range' min={0} max={1} step={0.01} />
+					<Slider
+						onMouseDown={handleSeekMouseDown}
+						onMouseUp={handleSeekMouseUp}
+						onChange={handleProgressChange}
+						value={played}
+						type='range'
+						min={0}
+						max={1}
+						step={0.01}
+					/>
 				</div>
+				<ReactPlayer
+					ref={reactPlayerRef}
+					url={song?.url}
+					playing={isPlaying}
+					hidden
+					onProgress={({ played, playedSeconds }) => {
+						if (!seeking) {
+							setPlayed(played);
+							setPlayedSeconds(playedSeconds);
+						}
+					}}
+				/>
 				<CardMedia
 					image={song?.thumbnail}
 					alt={song?.title}
