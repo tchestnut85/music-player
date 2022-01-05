@@ -13,4 +13,17 @@ const GET_SONGS = gql`
 	}
 `;
 
-export { GET_SONGS };
+const GET_QUEUED_SONGS = gql`
+	query getQueuedSongs {
+		queue @client {
+			id
+			duration
+			title
+			artist
+			thumbnail
+			url
+		}
+	}
+`;
+
+export { GET_SONGS, GET_QUEUED_SONGS };

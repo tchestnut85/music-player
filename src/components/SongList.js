@@ -10,10 +10,11 @@ import {
 } from '@mui/material';
 import { PlayArrow, Save, Pause } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
-import { useSubscription } from '@apollo/client';
+import { useMutation, useSubscription } from '@apollo/client';
 import { GET_SONGS } from '../utils/subscriptions';
 import { useSongContext } from '../utils/context/SongState';
 import { PLAY_SONG, PAUSE_SONG, SET_SONG } from '../utils/context/songReducer';
+import { ADD_OR_REMOVE_FROM_QUEUE } from '../utils/mutations';
 
 const useStyles = makeStyles(theme => ({
 	container: {
@@ -41,6 +42,12 @@ const Song = ({ song: currentSong }) => {
 	const [{ song, isPlaying }, dispatch] = useSongContext();
 	const [isCurrentSongPlaying, setIsCurrentSongPlaying] = useState(false);
 
+	const [addOrRemoveFromQueue] = useMutation(ADD_OR_REMOVE_FROM_QUEUE, {
+		onCompleted: data => {
+			localStorage.setItem('queue', JSON.stringify(data.addOrRemoveFromQueue));
+		},
+	});
+
 	useEffect(() => {
 		const isSongPlaying = isPlaying && currentSong?.id === song?.id;
 		setIsCurrentSongPlaying(isSongPlaying);
@@ -49,6 +56,12 @@ const Song = ({ song: currentSong }) => {
 	const handleTogglePlay = () => {
 		dispatch({ type: SET_SONG, payload: { currentSong } });
 		dispatch(isPlaying ? { type: PAUSE_SONG } : { type: PLAY_SONG });
+	};
+
+	const handleAddOrRemoveFromQueue = () => {
+		addOrRemoveFromQueue({
+			variables: { input: { ...currentSong, __typename: 'Song' } },
+		});
 	};
 
 	return (
@@ -71,7 +84,11 @@ const Song = ({ song: currentSong }) => {
 						<IconButton size='small' color='primary' onClick={handleTogglePlay}>
 							{isCurrentSongPlaying ? <Pause /> : <PlayArrow />}
 						</IconButton>
-						<IconButton size='small' color='secondary'>
+						<IconButton
+							size='small'
+							color='secondary'
+							onClick={handleAddOrRemoveFromQueue}
+						>
 							<Save color='secondary' />
 						</IconButton>
 					</CardActions>
@@ -105,7 +122,7 @@ const SongList = () => {
 
 	return (
 		<div>
-			{data.songs.map(song => (
+			{data?.songs.map(song => (
 				<Song key={song.id} song={song} />
 			))}
 		</div>

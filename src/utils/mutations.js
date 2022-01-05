@@ -22,4 +22,10 @@ const ADD_SONG = gql`
 	}
 `;
 
-export { ADD_SONG };
+const ADD_OR_REMOVE_FROM_QUEUE = gql`
+	mutation addOrRemoveFromQueue($input: SongInput!) {
+		addOrRemoveFromQueue(input: $input) @client
+	}
+`;
+
+export { ADD_SONG, ADD_OR_REMOVE_FROM_QUEUE };

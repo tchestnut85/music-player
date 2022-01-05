@@ -1,8 +1,9 @@
 import React from 'react';
 import { Avatar, IconButton, Typography, useMediaQuery } from '@mui/material';
-import { DUMMY_DATA, PLACEHOLDER_URL } from '../utils/data';
 import { Delete } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
+import { ADD_OR_REMOVE_FROM_QUEUE } from '../utils/mutations';
+import { useMutation } from '@apollo/client';
 
 const useStyles = makeStyles({
 	avatar: {
@@ -29,15 +30,21 @@ const useStyles = makeStyles({
 
 const QueuedSong = ({ song }) => {
 	const classes = useStyles();
-	const { artist, title } = song;
+	const [addOrRemoveFromQueue] = useMutation(ADD_OR_REMOVE_FROM_QUEUE, {
+		onCompleted: data =>
+			localStorage.setItem('queue', JSON.stringify(data.addOrRemoveFromQueue)),
+	});
+	const { artist, title, thumbnail } = song;
+
+	const handleAddOrRemoveFromQueue = () => {
+		addOrRemoveFromQueue({
+			variables: { input: { ...song, __typename: 'Song' } },
+		});
+	};
 
 	return (
 		<div className={classes.container}>
-			<Avatar
-				src={PLACEHOLDER_URL}
-				alt='Song Thumbnail'
-				className={classes.avatar}
-			/>
+			<Avatar src={thumbnail} alt='Song Thumbnail' className={classes.avatar} />
 			<div className={classes.songInfoContainer}>
 				<Typography variant='subtitle2' className={classes.text}>
 					{title}
@@ -50,24 +57,24 @@ const QueuedSong = ({ song }) => {
 					{artist}
 				</Typography>
 			</div>
-			<IconButton>
+			<IconButton onClick={handleAddOrRemoveFromQueue}>
 				<Delete color='error' />
 			</IconButton>
 		</div>
 	);
 };
 
-const SongQueue = () => {
+const SongQueue = ({ queue }) => {
 	const greaterThanMd = useMediaQuery(theme => theme.breakpoints.up('md'));
 
 	return (
 		greaterThanMd && (
 			<div style={{ margin: '10px 0' }}>
 				<Typography color='textSecondary' variant='button'>
-					Queue (5)
+					Queue ({queue.length})
 				</Typography>
-				{Array.from({ length: 5 }, () => DUMMY_DATA).map((DUMMY_DATA, i) => (
-					<QueuedSong key={i} song={DUMMY_DATA} />
+				{queue.map((song, i) => (
+					<QueuedSong key={i} song={song} />
 				))}
 			</div>
 		)

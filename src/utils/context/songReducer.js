@@ -4,7 +4,6 @@ export const PAUSE_SONG = 'PAUSE_SONG';
 export const SET_SONG = 'SET_SONG';
 
 function songReducer(state, { type, payload }) {
-	console.log('payload:', payload);
 	switch (type) {
 		case PLAY_SONG:
 			return {

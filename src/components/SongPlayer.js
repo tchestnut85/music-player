@@ -14,6 +14,8 @@ import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SongQueue from './SongQueue';
 import { useSongContext } from '../utils/context/SongState';
 import { PLAY_SONG, PAUSE_SONG } from '../utils/context/songReducer';
+import { useQuery } from '@apollo/client';
+import { GET_QUEUED_SONGS } from '../utils/queries';
 
 const useStyles = makeStyles(theme => ({
 	container: {
@@ -46,6 +48,8 @@ const useStyles = makeStyles(theme => ({
 
 const SongPlayer = () => {
 	const classes = useStyles();
+
+	const { data } = useQuery(GET_QUEUED_SONGS);
 
 	const [{ song, isPlaying }, dispatch] = useSongContext();
 
@@ -85,9 +89,13 @@ const SongPlayer = () => {
 					</div>
 					<Slider type='range' min={0} max={1} step={0.01} />
 				</div>
-				<CardMedia image={song?.thumbnail} className={classes.thumbnail} />
+				<CardMedia
+					image={song?.thumbnail}
+					alt={song?.title}
+					className={classes.thumbnail}
+				/>
 			</Card>
-			<SongQueue />
+			<SongQueue queue={data?.queue} />
 		</>
 	);
 };
