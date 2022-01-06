@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
 	Card,
 	Typography,
@@ -8,12 +8,12 @@ import {
 	CardMedia,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { PlayArrow, SkipPrevious, Pause } from '@mui/icons-material';
+import { PlayArrow, SkipPrevious, Pause, MusicNote } from '@mui/icons-material';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 
 import SongQueue from './SongQueue';
 import { useSongContext } from '../utils/context/SongState';
-import { PLAY_SONG, PAUSE_SONG } from '../utils/context/songReducer';
+import { PLAY_SONG, PAUSE_SONG, SET_SONG } from '../utils/context/songReducer';
 import { useQuery } from '@apollo/client';
 import { GET_QUEUED_SONGS } from '../utils/queries';
 import ReactPlayer from 'react-player';
@@ -35,6 +35,10 @@ const useStyles = makeStyles(theme => ({
 	thumbnail: {
 		width: 150,
 	},
+	placeholderThumbNail: {
+		flex: 1,
+		margin: 'auto 0',
+	},
 	controls: {
 		display: 'flex',
 		alignItems: 'center',
@@ -55,9 +59,36 @@ const SongPlayer = () => {
 	const [played, setPlayed] = useState(0);
 	const [seeking, setSeeking] = useState(false);
 	const [playedSeconds, setPlayedSeconds] = useState(0);
+	const [positionInQueue, setPositionInQueue] = useState(0);
+
+	useEffect(() => {
+		const songIndex = data.queue.findIndex(item => item.id === song?.id);
+		setPositionInQueue(songIndex);
+	}, [song?.id, data.queue]);
+
+	useEffect(() => {
+		const nextSong = data?.queue[positionInQueue + 1];
+		if (played === 1 && nextSong) {
+			setPlayed(0);
+			dispatch({ type: SET_SONG, payload: { currentSong: nextSong } });
+		}
+	}, [data.queue, played, dispatch, positionInQueue]);
 
 	const handleTogglePlay = () => {
 		dispatch(isPlaying ? { type: PAUSE_SONG } : { type: PLAY_SONG });
+	};
+
+	const handlePlayNextOrPrevSong = direction => {
+		const DIRECTIONS = {
+			prev: positionInQueue - 1,
+			next: positionInQueue + 1,
+		};
+
+		const song = data.queue[DIRECTIONS[direction]];
+
+		if (song) {
+			dispatch({ type: SET_SONG, payload: { currentSong: song } });
+		}
 	};
 
 	const handleProgressChange = (e, newValue) => {
@@ -87,7 +118,7 @@ const SongPlayer = () => {
 						</Typography>
 					</CardContent>
 					<div className={classes.controls}>
-						<IconButton>
+						<IconButton onClick={() => handlePlayNextOrPrevSong('prev')}>
 							<SkipPrevious />
 						</IconButton>
 						<IconButton onClick={handleTogglePlay}>
@@ -97,7 +128,7 @@ const SongPlayer = () => {
 								<PlayArrow className={classes.playIcon} />
 							)}
 						</IconButton>
-						<IconButton>
+						<IconButton onClick={() => handlePlayNextOrPrevSong('next')}>
 							<SkipNextIcon />
 						</IconButton>
 						<Typography variant='subtitle1' component='p' color='textSecondary'>
@@ -127,11 +158,15 @@ const SongPlayer = () => {
 						}
 					}}
 				/>
-				<CardMedia
-					image={song?.thumbnail}
-					alt={song?.title}
-					className={classes.thumbnail}
-				/>
+				{song?.thumbnail ? (
+					<CardMedia
+						image={song?.thumbnail}
+						alt={song?.title}
+						className={classes.thumbnail}
+					/>
+				) : (
+					<MusicNote className={classes.placeholderThumbNail} />
+				)}
 			</Card>
 			<SongQueue queue={data?.queue} />
 		</>
