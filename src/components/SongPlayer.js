@@ -75,6 +75,19 @@ const SongPlayer = () => {
 	}, [data.queue, played, dispatch, positionInQueue]);
 
 	const handleTogglePlay = () => {
+		// if songs are in the queue but nothing currently playing,
+		// play the first song when player's play icon in clicked
+		if (positionInQueue < 0 && data.queue.length) {
+			const song = data.queue[0];
+			dispatch(isPlaying ? { type: PAUSE_SONG } : { type: PLAY_SONG });
+			dispatch({ type: SET_SONG, payload: { currentSong: song } });
+			return;
+		}
+
+		// if no songs in the queue, do not change play icon to pause
+		// TODO - update this to play the first saved song since nothing currently in the queue
+		if (!data.queue.length) return;
+
 		dispatch(isPlaying ? { type: PAUSE_SONG } : { type: PLAY_SONG });
 	};
 
@@ -85,7 +98,6 @@ const SongPlayer = () => {
 		};
 
 		const song = data.queue[DIRECTIONS[direction]];
-
 		if (song) {
 			dispatch({ type: SET_SONG, payload: { currentSong: song } });
 		}
